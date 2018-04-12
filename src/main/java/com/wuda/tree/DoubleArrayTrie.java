@@ -28,6 +28,13 @@ public class DoubleArrayTrie {
     private int rootPosition = 1;
 
     /**
+     * double-array是动态扩容的,而扩容不可能做到用多少就分配多少,
+     * 因此必定会造成尾部元素的浪费,此字段记录最后一个有效元素在double-array数组中的位置.
+     */
+    private int baseLastPosition = 1;
+    private int checkLastPosition = 1;
+
+    /**
      * 默认的容量.
      */
     private int default_capacity = 8;
@@ -332,7 +339,7 @@ public class DoubleArrayTrie {
         // 这里会很慢,因为要遍历整个check数组
         int base_n = base[n];
         List<Character> characters = new ArrayList<>();
-        for (int m = rootPosition; m < check.length; m++) {
+        for (int m = rootPosition; m <= checkLastPosition; m++) {
             int check_m = check[m];
             if (check_m == n) {
                 int a = m - base_n; // g(n,a)=m　的逆推
@@ -355,7 +362,7 @@ public class DoubleArrayTrie {
         // TODO
         // 这里会很慢,因为要遍历整个check数组
         List<Integer> children = new ArrayList<>();
-        for (int m = rootPosition; m < check.length; m++) {
+        for (int m = rootPosition; m <= checkLastPosition; m++) {
             int check_m = check[m];
             if (check_m == node) {
                 children.add(m);
@@ -801,6 +808,7 @@ public class DoubleArrayTrie {
     private void setBase(int index, int value) {
         ensureExplicitDoubleArrayCapacity(index + 1);
         base[index] = value;
+        baseLastPosition = Math.max(baseLastPosition, index);
     }
 
     /**
@@ -814,6 +822,7 @@ public class DoubleArrayTrie {
     private void setCheck(int index, int value) {
         ensureExplicitDoubleArrayCapacity(index + 1);
         check[index] = value;
+        checkLastPosition = Math.max(checkLastPosition, index);
     }
 
 }
