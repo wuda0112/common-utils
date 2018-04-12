@@ -37,6 +37,11 @@ public class DoubleArrayTrie {
     private int checkLastPosition = 1;
 
     /**
+     * 记录最大的code point.
+     */
+    private int maxCodePoint = 0;
+
+    /**
      * 默认的容量.
      */
     private int default_capacity = 8;
@@ -338,10 +343,18 @@ public class DoubleArrayTrie {
      */
     private List<Character> arcsLeaving(int n) {
         // TODO
-        // 这里会很慢,因为要遍历整个check数组
+        // 这里会很慢,因为要遍历部分check数组
         int base_n = base[n];
+        if (base_n <= 0) {
+            return null;
+        }
         List<Character> characters = new ArrayList<>();
-        for (int m = rootPosition; m <= checkLastPosition; m++) {
+        /*
+        根据g(n,a)=m定义,m >= base_n 并且m <= base_n+a
+         */
+        int max = base_n + maxCodePoint;
+        max = Math.min(max, checkLastPosition);
+        for (int m = base_n; m <= max; m++) {
             int check_m = check[m];
             if (check_m == n) {
                 int a = m - base_n; // g(n,a)=m　的逆推
@@ -362,9 +375,18 @@ public class DoubleArrayTrie {
      */
     private List<Integer> nodesLeaving(int node) {
         // TODO
-        // 这里会很慢,因为要遍历整个check数组
+        // 这里会很慢,因为要遍历部分check数组
+        int base_n = base[node];
+        if (base_n <= 0) {
+            return null;
+        }
         List<Integer> children = new ArrayList<>();
-        for (int m = rootPosition; m <= checkLastPosition; m++) {
+        /*
+        根据g(n,a)=m定义,m >= base_n 并且m <= base_n+a
+         */
+        int max = base_n + maxCodePoint;
+        max = Math.min(max, checkLastPosition);
+        for (int m = base_n; m <= max; m++) {
             int check_m = check[m];
             if (check_m == node) {
                 children.add(m);
@@ -575,6 +597,7 @@ public class DoubleArrayTrie {
             }
             return codePoint;
         }
+        maxCodePoint = Math.max(maxCodePoint, c);
         return c;
     }
 
@@ -659,24 +682,19 @@ public class DoubleArrayTrie {
         long tailLength = tail.length;
         int wastedInDoubleArray = wastedInDoubleArray();
         int wastedInTailArray = wastedInTailArray();
-        builder.append("base length:");
-        builder.append(doubleArrayLength);
-        builder.append(",check length:");
-        builder.append(doubleArrayLength);
-        builder.append(",tail length:");
-        builder.append(tailLength);
-        builder.append("\nunused length in base:");
-        builder.append(base.length - wastedInDoubleArray);
-        builder.append(",unused length in check:");
-        builder.append(check.length - wastedInDoubleArray);
-        builder.append(",unused length in tail:");
-        builder.append(tail.length - wastedInTailArray);
-        builder.append("\nramUsedMB:");
-        builder.append(ramUsedMB());
-        builder.append(",ramUsedKB:");
-        builder.append(ramUsedKB());
-        builder.append(",ramUsedB:");
-        builder.append(ramUsedB());
+        builder.append("base length:" + doubleArrayLength);
+        builder.append(",check length:" + doubleArrayLength);
+        builder.append(",tail length:" + tailLength);
+        builder.append("\ncheckLastPosition:" + checkLastPosition);
+        builder.append(",baseLastPosition:" + baseLastPosition);
+        builder.append(",maxCodePoint:" + maxCodePoint);
+        builder.append("\ndouble-array waste start offset(contains):" + wastedInDoubleArray);
+        builder.append(",unused length in base:" + (base.length - wastedInDoubleArray));
+        builder.append(",unused length in check:" + (check.length - wastedInDoubleArray));
+        builder.append(",unused length in tail:" + (tail.length - wastedInTailArray));
+        builder.append("\nramUsedMB:" + ramUsedMB());
+        builder.append(",ramUsedKB:" + ramUsedKB());
+        builder.append(",ramUsedB:" + ramUsedB());
         return builder.toString();
     }
 
