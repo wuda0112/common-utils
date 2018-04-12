@@ -64,7 +64,7 @@ public class DoubleArrayTrie {
         check = new int[capacity];
         tail = new char[capacity];
         ensureExplicitDoubleArrayCapacity(rootPosition + 1);
-        base[rootPosition] = 1;
+        setBase(rootPosition,1);
     }
 
     /**
@@ -115,7 +115,7 @@ public class DoubleArrayTrie {
                             a = getCodePoint(c);
                             int q = x_check(c); // case 3 step 5
                             ensureExplicitDoubleArrayCapacity(n + 1);
-                            base[n] = q; // case 3 step 6
+                            setBase(n,q);// case 3 step 6
                             m = q + a;
                             ensureExplicitDoubleArrayCapacity(m + 1);
                             check[m] = n;
@@ -129,10 +129,10 @@ public class DoubleArrayTrie {
                     char separate_node_2 = remainingOfCurrent.charAt(separate_node_index);
                     int q = x_check(separate_node_1, separate_node_2);
                     ensureExplicitDoubleArrayCapacity(n + 1);
-                    base[n] = q;
+                    setBase(n,q);
                     // case 3 step 8
                     int m_1 = q + getCodePoint(separate_node_1);
-                    base[m_1] = -temp;
+                    setBase(m_1,-temp);
                     check[m_1] = n;
                     assert base[check[m_1]] >= 0 : "tail pointer node不能作为其他节点的父节点!";
                     // case 3 step 9
@@ -142,7 +142,7 @@ public class DoubleArrayTrie {
                     clearTailArray(separatorPos + 1, commonPrefixLength + 1/*和之前相比,就是公共前缀和separate node从TAIL数组中移除了*/);
                     // case 3 step 10
                     int m_2 = q + getCodePoint(separate_node_2);
-                    base[m_2] = -pos;
+                    setBase(m_2,-pos);
                     check[m_2] = n;
                     assert base[check[m_2]] >= 0 : "tail pointer node不能作为其他节点的父节点!";
                     int insertion_count_2 = remainingOfCurrent.length() - (commonPrefixLength + 1/*separate node*/);
@@ -161,7 +161,7 @@ public class DoubleArrayTrie {
                 int offset = index + 1;
                 int count = length - offset;
                 insertIntoTailArray(term, offset, count, this.pos);
-                base[m] = -pos;
+                setBase(m,-pos);
                 check[m] = n;
                 assert base[check[m]] >= 0 : "tail pointer node不能作为其他节点的父节点!";
                 ensureExplicitPos(count);
@@ -197,7 +197,7 @@ public class DoubleArrayTrie {
                 // case 4 step 5
                 int temp_base = base[modifyNode];
                 int q = x_check(arcsLeavingModifyNodeForXCheck);
-                base[modifyNode] = q;
+                setBase(modifyNode,q);
                 int temp_node_2;
                 for (char c : arcsLeavingModifyNode) {
                     // case 4 step 6
@@ -211,7 +211,7 @@ public class DoubleArrayTrie {
                     }
                     int max = Math.max(temp_node_1, temp_node_2);
                     ensureExplicitDoubleArrayCapacity(max + 1);
-                    base[temp_node_2] = base[temp_node_1];
+                    setBase(temp_node_2, base[temp_node_1]);
                     check[temp_node_2] = check[temp_node_1];
                     assert base[check[temp_node_2]] >= 0 : "tail pointer node不能作为其他节点的父节点!";
                     // case 4 step 7
@@ -223,7 +223,7 @@ public class DoubleArrayTrie {
                         }
                     }
                     // case 4 step 8
-                    base[temp_node_1] = 0;
+                    setBase(temp_node_1, 0);
                     check[temp_node_1] = 0;
                 }
                 /*
@@ -233,7 +233,7 @@ public class DoubleArrayTrie {
                 // case 4 step 11
                 int temp_node = base[inconsistencyPivotNode] + a;
                 // case 4 step 12
-                base[temp_node] = -pos;
+                setBase(temp_node,-pos);
                 check[temp_node] = inconsistencyPivotNode;
                 assert base[check[temp_node]] >= 0 : "tail pointer node不能作为其他节点的父节点!";
                 // case 4 step 13
@@ -789,4 +789,18 @@ public class DoubleArrayTrie {
         int offset = index + 1;
         return offset == tail.length ? -1 : offset;
     }
+
+    /**
+     * 在BASE数组的<i>index</i>处设置值.
+     *
+     * @param index
+     *         BASE数组下标
+     * @param value
+     *         index处设置成给定的此value
+     */
+    private void setBase(int index, int value) {
+        ensureExplicitDoubleArrayCapacity(index + 1);
+        base[index] = value;
+    }
+
 }
