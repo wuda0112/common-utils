@@ -28,6 +28,7 @@ public class DoubleArrayTrieTest {
         if (file == null) {
             throw new RuntimeException("请先指定词典文件!");
         }
+        long start = System.currentTimeMillis();
         DoubleArrayTrie doubleArrayTrie = new DoubleArrayTrie();
         AtomicInteger count = new AtomicInteger();
         try {
@@ -43,7 +44,8 @@ public class DoubleArrayTrieTest {
                     System.out.println("已经添加单词数:" + count.get());
                 }
             });
-            System.out.println("总单词数:" + count.get());
+            long end = System.currentTimeMillis();
+            System.out.println("插入单词数:" + count.get() + ",总共耗时:" + (end - start) + "ms");
         } catch (Exception e) {
             e.printStackTrace();
         }
