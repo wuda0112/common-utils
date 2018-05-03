@@ -4,7 +4,7 @@
 [DoubleArrayTrie](https://github.com/wuda0112/common-utils/blob/master/src/main/java/com/wuda/tree/DoubleArrayTrie.java) ,基于论文
 [An Efficient Implementation of Trie Structures](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.14.8665&rep=rep1&type=pdf) 实现
 
-## snowflak
+## Snowflake
 Twitter [Snowflake](https://github.com/wuda0112/common-utils/blob/master/src/main/java/com/wuda/keygen/KeyGeneratorSnowflake.java)
 
 ## 树形结构
