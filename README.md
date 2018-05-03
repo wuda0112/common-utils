@@ -1,6 +1,3 @@
-# common-utils
-常用的工具类
-
 # 已实现功能导航
 
 ## double-array trie
@@ -15,3 +12,6 @@ Twitter [Snowflake](https://github.com/wuda0112/common-utils/blob/master/src/mai
 
 ## 文本操作
 文本操作时的一些工具类，包括解析【人民日报】标记文档 [link](https://github.com/wuda0112/common-utils/tree/master/src/main/java/com/wuda/text)
+
+## java 8 stream jdbc
+通过java 8 stream API,流式处理数据库访问 [link](https://github.com/wuda0112/common-utils/blob/master/src/main/java/com/wuda/jdbc/Jdbcs.java)
