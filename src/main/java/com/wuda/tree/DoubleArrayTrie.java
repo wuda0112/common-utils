@@ -4,7 +4,9 @@ import java.util.*;
 
 /**
  * double-array trie,根据论文
- * <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.14.8665&rep=rep1&type=pdf">An Efficient Implementation of Trie Structures</a>
+ * <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.14.8665&rep=rep1&type=pdf">
+ * An Efficient Implementation of Trie Structures
+ * </a>
  * 实现.
  *
  * @author wuda
@@ -26,6 +28,18 @@ public class DoubleArrayTrie {
      * root node position.
      */
     private int rootPosition = 1;
+
+    /**
+     * double-array是动态扩容的,而扩容不可能做到用多少就分配多少,
+     * 因此必定会造成尾部元素的浪费,此字段记录最后一个有效元素在double-array数组中的位置.
+     */
+    private int baseLastPosition = 1;
+    private int checkLastPosition = 1;
+
+    /**
+     * 记录最大的code point.
+     */
+    private int maxCodePoint = 0;
 
     /**
      * 默认的容量.
@@ -64,7 +78,7 @@ public class DoubleArrayTrie {
         check = new int[capacity];
         tail = new char[capacity];
         ensureExplicitDoubleArrayCapacity(rootPosition + 1);
-        base[rootPosition] = 1;
+        setBase(rootPosition, 1);
     }
 
     /**
@@ -115,10 +129,10 @@ public class DoubleArrayTrie {
                             a = getCodePoint(c);
                             int q = x_check(c); // case 3 step 5
                             ensureExplicitDoubleArrayCapacity(n + 1);
-                            base[n] = q; // case 3 step 6
+                            setBase(n, q);// case 3 step 6
                             m = q + a;
                             ensureExplicitDoubleArrayCapacity(m + 1);
-                            check[m] = n;
+                            setCheck(m, n);
                             assert base[check[m]] >= 0 : "tail pointer node不能作为其他节点的父节点!";
                             n = m;
                         }
@@ -129,11 +143,11 @@ public class DoubleArrayTrie {
                     char separate_node_2 = remainingOfCurrent.charAt(separate_node_index);
                     int q = x_check(separate_node_1, separate_node_2);
                     ensureExplicitDoubleArrayCapacity(n + 1);
-                    base[n] = q;
+                    setBase(n, q);
                     // case 3 step 8
                     int m_1 = q + getCodePoint(separate_node_1);
-                    base[m_1] = -temp;
-                    check[m_1] = n;
+                    setBase(m_1, -temp);
+                    setCheck(m_1, n);
                     assert base[check[m_1]] >= 0 : "tail pointer node不能作为其他节点的父节点!";
                     // case 3 step 9
                     int insertion_count_1 = remainingInTail.length() - (commonPrefixLength + 1/*separate node*/);
@@ -142,8 +156,8 @@ public class DoubleArrayTrie {
                     clearTailArray(separatorPos + 1, commonPrefixLength + 1/*和之前相比,就是公共前缀和separate node从TAIL数组中移除了*/);
                     // case 3 step 10
                     int m_2 = q + getCodePoint(separate_node_2);
-                    base[m_2] = -pos;
-                    check[m_2] = n;
+                    setBase(m_2, -pos);
+                    setCheck(m_2, n);
                     assert base[check[m_2]] >= 0 : "tail pointer node不能作为其他节点的父节点!";
                     int insertion_count_2 = remainingOfCurrent.length() - (commonPrefixLength + 1/*separate node*/);
                     insertIntoTailArray(remainingOfCurrent, separate_node_index + 1, insertion_count_2, this.pos);
@@ -161,8 +175,8 @@ public class DoubleArrayTrie {
                 int offset = index + 1;
                 int count = length - offset;
                 insertIntoTailArray(term, offset, count, this.pos);
-                base[m] = -pos;
-                check[m] = n;
+                setBase(m, -pos);
+                setCheck(m, n);
                 assert base[check[m]] >= 0 : "tail pointer node不能作为其他节点的父节点!";
                 ensureExplicitPos(count);
                 break;
@@ -197,7 +211,7 @@ public class DoubleArrayTrie {
                 // case 4 step 5
                 int temp_base = base[modifyNode];
                 int q = x_check(arcsLeavingModifyNodeForXCheck);
-                base[modifyNode] = q;
+                setBase(modifyNode, q);
                 int temp_node_2;
                 for (char c : arcsLeavingModifyNode) {
                     // case 4 step 6
@@ -211,20 +225,20 @@ public class DoubleArrayTrie {
                     }
                     int max = Math.max(temp_node_1, temp_node_2);
                     ensureExplicitDoubleArrayCapacity(max + 1);
-                    base[temp_node_2] = base[temp_node_1];
-                    check[temp_node_2] = check[temp_node_1];
+                    setBase(temp_node_2, base[temp_node_1]);
+                    setCheck(temp_node_2, check[temp_node_1]);
                     assert base[check[temp_node_2]] >= 0 : "tail pointer node不能作为其他节点的父节点!";
                     // case 4 step 7
                     if (base[temp_node_1] > 0) {
                         List<Integer> children = nodesLeaving(temp_node_1);
                         for (int child : children) {
-                            check[child] = temp_node_2;
+                            setCheck(child, temp_node_2);
                             assert base[check[child]] >= 0 : "tail pointer node不能作为其他节点的父节点!";
                         }
                     }
                     // case 4 step 8
-                    base[temp_node_1] = 0;
-                    check[temp_node_1] = 0;
+                    setBase(temp_node_1, 0);
+                    setCheck(temp_node_1, 0);
                 }
                 /*
                  * 以下其实都可以抽取公共,但是为了满足论文中的定义,方便理解，所以就这样处理.对于数据结构的实现,
@@ -233,8 +247,8 @@ public class DoubleArrayTrie {
                 // case 4 step 11
                 int temp_node = base[inconsistencyPivotNode] + a;
                 // case 4 step 12
-                base[temp_node] = -pos;
-                check[temp_node] = inconsistencyPivotNode;
+                setBase(temp_node, -pos);
+                setCheck(temp_node, inconsistencyPivotNode);
                 assert base[check[temp_node]] >= 0 : "tail pointer node不能作为其他节点的父节点!";
                 // case 4 step 13
                 int offset = index + 1;
@@ -329,10 +343,18 @@ public class DoubleArrayTrie {
      */
     private List<Character> arcsLeaving(int n) {
         // TODO
-        // 这里会很慢,因为要遍历整个check数组
+        // 这里会很慢,因为要遍历部分check数组
         int base_n = base[n];
+        if (base_n <= 0) {
+            return null;
+        }
         List<Character> characters = new ArrayList<>();
-        for (int m = rootPosition; m < check.length; m++) {
+        /*
+        根据g(n,a)=m定义,m >= base_n 并且m <= base_n+a
+         */
+        int max = base_n + maxCodePoint;
+        max = Math.min(max, checkLastPosition);
+        for (int m = base_n; m <= max; m++) {
             int check_m = check[m];
             if (check_m == n) {
                 int a = m - base_n; // g(n,a)=m　的逆推
@@ -353,9 +375,18 @@ public class DoubleArrayTrie {
      */
     private List<Integer> nodesLeaving(int node) {
         // TODO
-        // 这里会很慢,因为要遍历整个check数组
+        // 这里会很慢,因为要遍历部分check数组
+        int base_n = base[node];
+        if (base_n <= 0) {
+            return null;
+        }
         List<Integer> children = new ArrayList<>();
-        for (int m = rootPosition; m < check.length; m++) {
+        /*
+        根据g(n,a)=m定义,m >= base_n 并且m <= base_n+a
+         */
+        int max = base_n + maxCodePoint;
+        max = Math.min(max, checkLastPosition);
+        for (int m = base_n; m <= max; m++) {
             int check_m = check[m];
             if (check_m == node) {
                 children.add(m);
@@ -566,6 +597,7 @@ public class DoubleArrayTrie {
             }
             return codePoint;
         }
+        maxCodePoint = Math.max(maxCodePoint, c);
         return c;
     }
 
@@ -650,24 +682,19 @@ public class DoubleArrayTrie {
         long tailLength = tail.length;
         int wastedInDoubleArray = wastedInDoubleArray();
         int wastedInTailArray = wastedInTailArray();
-        builder.append("base length:");
-        builder.append(doubleArrayLength);
-        builder.append(",check length:");
-        builder.append(doubleArrayLength);
-        builder.append(",tail length:");
-        builder.append(tailLength);
-        builder.append("\nunused length in base:");
-        builder.append(base.length - wastedInDoubleArray);
-        builder.append(",unused length in check:");
-        builder.append(check.length - wastedInDoubleArray);
-        builder.append(",unused length in tail:");
-        builder.append(tail.length - wastedInTailArray);
-        builder.append("\nramUsedMB:");
-        builder.append(ramUsedMB());
-        builder.append(",ramUsedKB:");
-        builder.append(ramUsedKB());
-        builder.append(",ramUsedB:");
-        builder.append(ramUsedB());
+        builder.append("base length:" + doubleArrayLength);
+        builder.append(",check length:" + doubleArrayLength);
+        builder.append(",tail length:" + tailLength);
+        builder.append("\ncheckLastPosition:" + checkLastPosition);
+        builder.append(",baseLastPosition:" + baseLastPosition);
+        builder.append(",maxCodePoint:" + maxCodePoint);
+        builder.append("\ndouble-array waste start offset(contains):" + wastedInDoubleArray);
+        builder.append(",unused length in base:" + (base.length - wastedInDoubleArray));
+        builder.append(",unused length in check:" + (check.length - wastedInDoubleArray));
+        builder.append(",unused length in tail:" + (tail.length - wastedInTailArray));
+        builder.append("\nramUsedMB:" + ramUsedMB());
+        builder.append(",ramUsedKB:" + ramUsedKB());
+        builder.append(",ramUsedB:" + ramUsedB());
         return builder.toString();
     }
 
@@ -789,4 +816,33 @@ public class DoubleArrayTrie {
         int offset = index + 1;
         return offset == tail.length ? -1 : offset;
     }
+
+    /**
+     * 在BASE数组的<i>index</i>处设置值.
+     *
+     * @param index
+     *         BASE数组下标
+     * @param value
+     *         index处设置成给定的此value
+     */
+    private void setBase(int index, int value) {
+        ensureExplicitDoubleArrayCapacity(index + 1);
+        base[index] = value;
+        baseLastPosition = Math.max(baseLastPosition, index);
+    }
+
+    /**
+     * 在CHECK数组的<i>index</i>处设置值.
+     *
+     * @param index
+     *         CHECK数组下标
+     * @param value
+     *         index处设置成给定的此value
+     */
+    private void setCheck(int index, int value) {
+        ensureExplicitDoubleArrayCapacity(index + 1);
+        check[index] = value;
+        checkLastPosition = Math.max(checkLastPosition, index);
+    }
+
 }

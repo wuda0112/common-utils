@@ -1,14 +1,13 @@
 package com.wuda.tree;
 
-import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * double-array trie test.
+ * full double-array trie test.
  */
-public class DoubleArrayTrieTest {
+public class FullDoubleArrayTrieTest {
 
     /**
      * 词典文件.一行一个单词.
@@ -24,12 +23,12 @@ public class DoubleArrayTrieTest {
      *
      * @return double-array trie
      */
-    public DoubleArrayTrie insert() {
+    public FullDoubleArrayTrie insert() {
         if (file == null) {
             throw new RuntimeException("请先指定词典文件!");
         }
         long start = System.currentTimeMillis();
-        DoubleArrayTrie doubleArrayTrie = new DoubleArrayTrie();
+        FullDoubleArrayTrie doubleArrayTrie = new FullDoubleArrayTrie(25000000);
         AtomicInteger count = new AtomicInteger();
         try {
             Files.lines(Paths.get(file)).filter((String line) -> {
@@ -41,13 +40,14 @@ public class DoubleArrayTrieTest {
                 doubleArrayTrie.add(line);
                 count.incrementAndGet();
                 if (count.intValue() % 1000 == 0) {
-                    System.out.println("已经添加单词数:" + count.get());
+                    System.out.println("已经添加单词数:" + count.get() + "," + doubleArrayTrie.toString());
                 }
             });
             long end = System.currentTimeMillis();
             System.out.println("插入单词数:" + count.get() + ",总共耗时:" + (end - start) + "ms");
         } catch (Exception e) {
             e.printStackTrace();
+            System.exit(0);
         }
         return doubleArrayTrie;
     }
@@ -58,7 +58,7 @@ public class DoubleArrayTrieTest {
      * @param doubleArrayTrie
      *         double-array trie
      */
-    public void searchIn(DoubleArrayTrie doubleArrayTrie) {
+    public void searchIn(FullDoubleArrayTrie doubleArrayTrie) {
         if (file == null) {
             throw new RuntimeException("请先指定词典文件!");
         }
@@ -98,14 +98,15 @@ public class DoubleArrayTrieTest {
      *         term
      * @return 是否包含
      */
-    public boolean contains(DoubleArrayTrie doubleArrayTrie, String term) {
+    public boolean contains(FullDoubleArrayTrie doubleArrayTrie, String term) {
         return doubleArrayTrie.contains(term);
     }
 
     public static void main(String[] args) {
-        DoubleArrayTrieTest test = new DoubleArrayTrieTest();
-        test.setFile("F:/main.dic"); // 词典所在的文件
-        DoubleArrayTrie doubleArrayTrie = test.insert();
+        FullDoubleArrayTrieTest test = new FullDoubleArrayTrieTest();
+        test.setFile("F:/360.dic"); // 词典所在的文件
+//        test.setFile("F:/test.dic"); // 词典所在的文件
+        FullDoubleArrayTrie doubleArrayTrie = test.insert();
         String summary = doubleArrayTrie.toString();
         System.out.println(System.currentTimeMillis() + "===============summary==================");
         System.out.println(summary);
