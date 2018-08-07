@@ -1,5 +1,7 @@
 package com.wuda.tree;
 
+import com.wuda.lang.IntArray;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -10,12 +12,12 @@ import java.util.List;
  * <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.14.8665&rep=rep1&type=pdf">
  * An Efficient Implementation of Trie Structures
  * </a>
- * 实现,但是有一些改动,比如:TAIL数组没有了.
+ * 实现,但是有一些改动,比如:TAIL数组没有了,所有的字符都由double array管理,因此叫做full trie.
  *
  * @author wuda
  * @version 1.0
  */
-public class AbstractDoubleArrayTrie {
+public class FullDoubleArrayTrie {
     /**
      * the BASE array.
      * 负值: end node; 0: 未使用的节点; 正值: 已使用的正常节点
@@ -55,7 +57,7 @@ public class AbstractDoubleArrayTrie {
     /**
      * 构造一个double-array trie,使用默认的容量.
      */
-    public AbstractDoubleArrayTrie() {
+    public FullDoubleArrayTrie() {
         this(8);
     }
 
@@ -65,7 +67,7 @@ public class AbstractDoubleArrayTrie {
      * @param capacity
      *         容量
      */
-    public AbstractDoubleArrayTrie(int capacity) {
+    public FullDoubleArrayTrie(int capacity) {
         if (capacity <= 0) {
             throw new IllegalArgumentException("Illegal Capacity: " +
                     capacity);

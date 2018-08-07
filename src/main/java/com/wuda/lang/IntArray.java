@@ -1,4 +1,4 @@
-package com.wuda.tree;
+package com.wuda.lang;
 
 import java.util.Arrays;
 

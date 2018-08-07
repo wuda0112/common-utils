@@ -5,9 +5,9 @@ import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * double-array trie test.
+ * full double-array trie test.
  */
-public class AbstractDoubleArrayTrieTest {
+public class FullDoubleArrayTrieTest {
 
     /**
      * 词典文件.一行一个单词.
@@ -40,7 +40,7 @@ public class AbstractDoubleArrayTrieTest {
                 doubleArrayTrie.add(line);
                 count.incrementAndGet();
                 if (count.intValue() % 1000 == 0) {
-                    System.out.println("已经添加单词数:" + count.get()+","+doubleArrayTrie.toString());
+                    System.out.println("已经添加单词数:" + count.get() + "," + doubleArrayTrie.toString());
                 }
             });
             long end = System.currentTimeMillis();
@@ -103,7 +103,7 @@ public class AbstractDoubleArrayTrieTest {
     }
 
     public static void main(String[] args) {
-        AbstractDoubleArrayTrieTest test = new AbstractDoubleArrayTrieTest();
+        FullDoubleArrayTrieTest test = new FullDoubleArrayTrieTest();
         test.setFile("F:/360.dic"); // 词典所在的文件
 //        test.setFile("F:/test.dic"); // 词典所在的文件
         FullDoubleArrayTrie doubleArrayTrie = test.insert();
